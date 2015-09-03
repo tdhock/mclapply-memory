@@ -28,3 +28,10 @@ required to process N=100000 indices). Again the standard lapply
 function has no such overhead.
 
 Is there any way to use mclapply without this memory overhead?
+
+*** Reproducing these results
+
+Copy works_with_R from
+https://github.com/tdhock/dotfiles/blob/master/.Rprofile to your
+~/.Rprofile, then on the command line cd to this directory and type
+make.
