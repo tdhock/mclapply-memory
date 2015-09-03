@@ -5,12 +5,24 @@ library(parallel)
 
 nothing.seq <- as.integer(seq(10, 1e5, l=20))
 
+efficient.mclapply <- function(X, FUN){
+  N <- length(X)
+  mc.cores <- getOption("mc.cores")
+  i.list <- splitIndices(N, N/mc.cores)
+  result.list <- list()
+  for(i in seq_along(i.list)){
+    i.vec <- i.list[[i]]
+    result.list[i.vec] <- mclapply(X[i.vec], FUN)
+  }
+  result.list
+}
+
 test.funs <- function(lapply.arg){
   memory.list <- list()
   for(i in seq_along(nothing.seq)){
     n.nothing <- nothing.seq[[i]]
     cat(sprintf("%4d / %4d sizes %d\n", i, length(nothing.seq), n.nothing))
-    for(fun.name in c("mclapply", "lapply")){
+    for(fun.name in c("efficient.mclapply", "mclapply", "lapply")){
       LAPPLY <- get(fun.name)
       for(rep.num in 1:2){
         memtime.list <- memtime({
