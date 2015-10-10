@@ -28,3 +28,13 @@ required to process N=100000 indices). Again the standard lapply
 function has no such overhead.
 
 Is there any way to use mclapply without this memory overhead?
+
+*** Comparison with multiprocessing in Python
+
+I adapted David Taylor's [[file:multiprocess.py]] code and ran it with
+several parameters using [[file:multiprocess.sh]]. The figure below shows
+an analogous benchmark for the multiprocessing module in Python:
+
+[[file:figure-multiprocess.png]]
+
+It seems that Python also suffers from the linear memory overhead.
