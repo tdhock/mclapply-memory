@@ -28,15 +28,13 @@ maxjobs.mclapply <- function(X, FUN, maxjobs=getOption("mc.cores", 1L)){
   result.list
 }
 
-maxjobs.10000 <- function(...){
-  maxjobs.mclapply(..., maxjobs=10000)
-}
-
-maxjobs.1000 <- function(...){
+maxjobs.2cores <- function(...){
+  options(mc.cores=2)
   maxjobs.mclapply(..., maxjobs=1000)
 }
 
-maxjobs.100 <- function(...){
+maxjobs.4cores <- function(...){
+  options(mc.cores=4)
   maxjobs.mclapply(..., maxjobs=1000)
 }
 
@@ -49,7 +47,8 @@ mclapply.4cores <- function(...){
 }
 
 fun.name.vec <-
-  c("maxjobs.100",
+  c("maxjobs.2cores",
+    "maxjobs.4cores",
     ##"maxjobs.1000",
     ##"mclapply",
     "mclapply.2cores",
