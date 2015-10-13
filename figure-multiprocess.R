@@ -7,21 +7,24 @@ multiprocess$cores.fac <-
   factor(multiprocess$cores, c("4", "2", "1"))
 multiprocess$fun.fac <-
   factor(multiprocess$fun.name, c("Pool.map", "maxjobs_map", "map"))
+multiprocess$pfun.fac <-
+  factor(multiprocess$pfun.name, c("returnNone", "returnList"))
 
 p <- ggplot()+
+  ggtitle("Python memory benchmarks for map functions")+
   scale_y_continuous("megabytes used")+
   scale_x_continuous("length of second argument to map")+
   geom_line(aes(size, kilobytes/1024, color=cores.fac,
+                group=interaction(cores.fac, fun.fac, trial),
                 linetype=fun.fac),
             pch=1,
-            size=1,
             data=multiprocess)+
   theme_bw()+
   scale_color_discrete("cores")+
   scale_linetype_manual("function", values=c(map="dotted",
                           Pool.map="solid", maxjobs_map="dashed"))+
   theme(panel.margin=grid::unit(0, "cm"))+
-  facet_grid(pfun.name ~ ., scales="free")
+  facet_grid(pfun.fac ~ ., scales="free")
 
 png("figure-multiprocess.png")
 print(p)

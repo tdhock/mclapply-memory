@@ -1,4 +1,6 @@
-Why does mclapply take so much memory?
+#+TITLE: Memory benchmarking of multi-core processing in R and Python
+
+*** Why does R's mclapply take so much memory?
 
 Most useRs know about the parallel::mclapply function which can
 potentially speed up R code (with respect to the standard lapply
@@ -8,33 +10,31 @@ usage. In this report I will explore the memory usage of mclapply.
 
 In [[file:figure-kilobytes-used.R]] I benchmarked the memory usage of
 =LAPPLY(1:N, returnXXX)= for several different choices of LAPPLY
-(lapply, mclapply), N (10, ..., 100000), returnXXX. The figure below
-shows the memory usage as a function of number of iterations (N) for
-two such returnXXX functions:
+(lapply, mclapply, my mclapply maxjobs hack), N (10, ..., 100000),
+returnXXX. The figure below shows the memory usage as a function of
+number of iterations (N) for two such returnXXX functions:
 
 *returnNULL* is a function that just returns NULL. In this case
 mclapply has a surprisingly significant linear memory overhead. For
-example, about 60 megabytes of memory are required on my system for
-mclapply to process a vector of N=100000 indices, returning a list of
-100000 NULL (orange dots). In comparison, the standard lapply function
-has no such overhead (constant memory usage, blue dots).
+example, with 4 CPU cores, about 60 megabytes of memory are required
+on my system for mclapply to process a vector of N=100000 indices,
+returning a list of 100000 NULL (orange solid lines). In comparison,
+the standard lapply function has no such overhead (constant memory
+usage, blue dotted lines). Using 2 cores rather than 4 seems to
+decrease memory usage for large data sets. The dashed lines show my
+[[file:kilobytes.used.R][maxjobs.mclapply]] hack which just repeatedly runs mclapply with a
+vector of at most 1000 elements as its first argument.
 
 [[file:figure-kilobytes-used.png]]
 
 *returnDF* is a function that just returns a pre-computed data.frame
 with 100 rows. In this case the memory overhead is also linear, but
-the linear factor is much bigger (about 800 megabytes of memory
+the linear factor is much bigger (about 600 megabytes of memory
 required to process N=100000 indices). Again the standard lapply
-function has no such overhead.
-
-Is there any way to use mclapply without this memory overhead?
-
-*** Reproducing these results
-
-Copy works_with_R from
-https://github.com/tdhock/dotfiles/blob/master/.Rprofile to your
-~/.Rprofile, then on the command line cd to this directory and type
-make.
+function has no such overhead. Interestingly, my "maxjobs" hack
+results in a significant decrease in memory consumption! So in
+practice I use this in [[https://github.com/tdhock/PeakSegJoint/blob/master/R/mclapply.R][PeakSegJoint]] to avoid having my jobs killed on
+[[http://www.hpc.mcgill.ca/index.php/starthere/81-doc-pages/91-guillimin-job-submit][the guillimin supercomputer]].
 
 *** Comparison with multiprocessing in Python
 
@@ -44,4 +44,22 @@ an analogous benchmark for the multiprocessing module in Python:
 
 [[file:figure-multiprocess.png]]
 
-It seems that Python also suffers from the linear memory overhead.
+It seems that Python also suffers from the linear memory overhead
+(solid lines), and that my "maxjobs" hack also works to decrease
+memory usage (dashed lines), but the regular map function has the
+least memory usage (dotted lines). The memory overhead increases with
+the number of cores (top panel, returnNone), but it is not significant
+for non-trivial data (bottom panel).
+
+*** Reproducing these results
+
+Copy works_with_R from
+https://github.com/tdhock/dotfiles/blob/master/.Rprofile to your
+~/.Rprofile, then on the command line cd to this directory.
+
+Type =bash multiprocess.sh= to run a series of Python benchmarks and
+save them in the =multiprocess-data/= directory. I did it twice so we
+can see the variation between runs. Plot using =make
+figure-multiprocess.png=.
+
+To re-do the R benchmark type =make figure-kilobytes-used.png=.

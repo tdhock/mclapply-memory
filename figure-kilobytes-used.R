@@ -10,6 +10,7 @@ kilobytes.used$cores.fac <-
          c("4", "2", ""), c("4", "2", "1"))
 
 p <- ggplot()+
+  ggtitle("R memory benchmarks for lapply functions")+
   scale_y_continuous("megabytes used")+
   scale_x_continuous("length of first argument to (mc)?lapply")+
   ## geom_point(aes(n.nothing, kilobytes/1024, color=fun.name),
