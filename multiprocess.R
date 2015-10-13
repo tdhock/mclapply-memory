@@ -2,15 +2,22 @@ works_with_R("3.2.2", data.table="1.9.6",
              "tdhock/namedCapture@6ed1257fa0d5c985931de24c3516a0f32a9323cf")
 
 pattern <- paste0(
+  "(?<trial>[0-9]+)",
+  "/",
   "(?<size>[0-9]+)",
   "-",
   "(?<height>1|100)",
   "-",
-  "(?<cores>[0-9])")
+  "(?<cores>[0-9])",
+  "(?<maxjobs>maxjobs)?")
 out.file.vec <- Sys.glob("multiprocess-data/*/*")
 match.mat <- str_match_named(out.file.vec, pattern)
 match.df <-
-  data.frame(fun.name=ifelse(match.mat[, "cores"]==1, "map", "Pool.map"),
+  data.frame(fun.name=ifelse(match.mat[, "cores"]==1, "map",
+               ifelse(match.mat[, "maxjobs"]=="maxjobs", "maxjobs_map",
+                      "Pool.map")),
+             trial=match.mat[, "trial"],
+             cores=as.numeric(match.mat[, "cores"]),
              pfun.name=ifelse(match.mat[, "height"]==1, "returnNone", "returnList"),
              size=as.numeric(match.mat[, "size"]))
 
