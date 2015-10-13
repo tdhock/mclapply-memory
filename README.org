@@ -35,3 +35,13 @@ Copy works_with_R from
 https://github.com/tdhock/dotfiles/blob/master/.Rprofile to your
 ~/.Rprofile, then on the command line cd to this directory and type
 make.
+
+*** Comparison with multiprocessing in Python
+
+I adapted David Taylor's [[file:multiprocess.py]] code and ran it with
+several parameters using [[file:multiprocess.sh]]. The figure below shows
+an analogous benchmark for the multiprocessing module in Python:
+
+[[file:figure-multiprocess.png]]
+
+It seems that Python also suffers from the linear memory overhead.
