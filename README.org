@@ -6,7 +6,7 @@ function) by executing in parallel across several cores. However I did
 not know that this speedup comes at the price of increased memory
 usage. In this report I will explore the memory usage of mclapply.
 
-In [[file:figure-megabytes-used.R]] I benchmarked the memory usage of
+In [[file:figure-kilobytes-used.R]] I benchmarked the memory usage of
 =LAPPLY(1:N, returnXXX)= for several different choices of LAPPLY
 (lapply, mclapply), N (10, ..., 100000), returnXXX. The figure below
 shows the memory usage as a function of number of iterations (N) for
@@ -19,7 +19,7 @@ mclapply to process a vector of N=100000 indices, returning a list of
 100000 NULL (orange dots). In comparison, the standard lapply function
 has no such overhead (constant memory usage, blue dots).
 
-[[file:figure-megabytes-used.png]]
+[[file:figure-kilobytes-used.png]]
 
 *returnDF* is a function that just returns a pre-computed data.frame
 with 100 rows. In this case the memory overhead is also linear, but

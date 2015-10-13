@@ -1,4 +1,4 @@
-figure-megabytes-used.png: figure-megabytes-used.R megabytes.used.RData
+figure-kilobytes-used.png: figure-kilobytes-used.R kilobytes.used.RData
 	R --no-save < $<
-megabytes.used.RData: megabytes.used.R
+kilobytes.used.RData: kilobytes.used.R
 	R --no-save < $<
