@@ -52,6 +52,82 @@ mc.preschedule: if set to ‘TRUE’ then the computation is first divided
 This benchmark is in the situation with few cores and large number of
 values in X, so I kept mc.preschedule=TRUE.
 
+
+*** Question and response on R-devel
+
+#+BEGIN_SRC text
+> On Sep 2, 2015, at 1:12 PM, Toby Hocking <tdhock5@gmail.com> wrote:
+>
+> Dear R-devel,
+>
+> I am running mclapply with many iterations over a function that modifies
+> nothing and makes no copies of anything. It is taking up a lot of memory,
+> so it seems to me like this is a bug. Should I post this to
+> bugs.r-project.org?
+>
+> A minimal reproducible example can be obtained by first starting a memory
+> monitoring program such as htop, and then executing the following code
+> while looking at how much memory is being used by the system
+>
+> library(parallel)
+> seconds <- 5
+> N <- 100000
+> result.list <- mclapply(1:N, function(i)Sys.sleep(1/N*seconds))
+>
+> On my system, memory usage goes up about 60MB on this example. But it does
+> not go up at all if I change mclapply to lapply. Is this a bug?
+>
+> For a more detailed discussion with a figure that shows that the memory
+> overhead is linear in N, please see
+> https://github.com/tdhock/mclapply-memory
+>
+
+I'm not quite sure what is supposed to be the issue here. One would
+expect the memory used will be linear in the number elements you
+process - by definition of the task, since you'll be creating linearly
+many more objects.
+
+Also using top doesn't actually measure the memory used by R itself
+(see FAQ 7.42).
+
+That said, I re-run your script and it didn't look anything like what
+you have on your webpage.  For the NULL result you end up dealing will
+all the objects you create in your test that overshadow any memory
+usage and stabilizes after garbage-collection. As you would expect,
+any output of top is essentially bogus up to a gc. How much memory R
+will use is essentially governed by the level at which you set the gc
+trigger. In real world you actually want that to be fairly high if you
+can afford it (in gigabytes, not megabytes), because you get often
+much higher performance by delaying gcs if you don't have low total
+memory (essentially using the memory as a buffer). Given that the
+usage is so negligible, it won't trigger any gc on its own, so you're
+just measuring accumulated objects - which will be always higher for
+mclapply because of the bookkeeping and serialization involved in the
+communication.
+
+The real difference is only in the df case. The reason for it is that
+your lapply() there is simply a no-op, because R is smart enough to
+realize that you are always returning the same object so it won't
+actually create anything and just return a reference back to df - thus
+using no memory at all. However, once you split the inputs, your main
+session can no longer perform this optimization because the processing
+is now in a separate process, so it has no way of knowing that you are
+returning the object unmodified. So what you are measuring is a
+special case that is arguably not really relevant in real
+applications.
+
+Cheers,
+Simon
+#+END_SRC
+
+Using top/free to measure memory usage indeed measures things other
+than R, but in these experiments I was careful to not run anything
+other than the benchmark on the test computer. Another way to measure
+memory usage of only R is with [[https://github.com/tdhock/testthatQuantity/blob/master/exec/rss.sh][ps -p PID_OF_R -o rss]], but that
+under-estimates R's true memory usage in this benchmark, since each
+parallel process started by =mclapply= gets its own PID (different
+from the PID of the main R process).
+
 *** Comparison with multiprocessing in Python
 
 I adapted David Taylor's [[file:multiprocess.py]] code and ran it with
