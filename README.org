@@ -45,11 +45,12 @@ an analogous benchmark for the multiprocessing module in Python:
 [[file:figure-multiprocess.png]]
 
 It seems that Python also suffers from the linear memory overhead
-(solid lines), and that my "maxjobs" hack also works to decrease
-memory usage (dashed lines), but the regular map function has the
-least memory usage (dotted lines). The memory overhead increases with
-the number of cores (top panel, returnNone), but it is not significant
-for non-trivial data (bottom panel).
+(solid lines), but it can be avoided by using the chunksize argument
+to =Pool.map= (dashed lines). It works the same way as my "maxjobs"
+hack (dashed lines). The regular map function has the least memory
+usage (dotted lines). The memory overhead increases with the number of
+cores (top panel, returnNone), but it is not significant for
+non-trivial data (bottom panel).
 
 *** Reproducing these results
 

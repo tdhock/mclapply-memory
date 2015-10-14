@@ -9,13 +9,12 @@ pattern <- paste0(
   "(?<height>1|100)",
   "-",
   "(?<cores>[0-9])",
-  "(?<maxjobs>maxjobs)?")
+  "(?<fun>.*)")
 out.file.vec <- Sys.glob("multiprocess-data/*/*")
 match.mat <- str_match_named(out.file.vec, pattern)
 match.df <-
   data.frame(fun.name=ifelse(match.mat[, "cores"]==1, "map",
-               ifelse(match.mat[, "maxjobs"]=="maxjobs", "maxjobs_map",
-                      "Pool.map")),
+               ifelse(match.mat[, "fun"]=="", "Pool.map", match.mat[, "fun"])),
              trial=match.mat[, "trial"],
              cores=as.numeric(match.mat[, "cores"]),
              pfun.name=ifelse(match.mat[, "height"]==1, "returnNone", "returnList"),

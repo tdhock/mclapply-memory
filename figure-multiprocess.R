@@ -6,7 +6,7 @@ load("multiprocess.RData")
 multiprocess$cores.fac <-
   factor(multiprocess$cores, c("4", "2", "1"))
 multiprocess$fun.fac <-
-  factor(multiprocess$fun.name, c("Pool.map", "maxjobs_map", "map"))
+  factor(multiprocess$fun.name, c("Pool.map", "maxjobs", "chunksize", "map"))
 multiprocess$pfun.fac <-
   factor(multiprocess$pfun.name, c("returnNone", "returnList"))
 
@@ -22,7 +22,8 @@ p <- ggplot()+
   theme_bw()+
   scale_color_discrete("cores")+
   scale_linetype_manual("function", values=c(map="dotted",
-                          Pool.map="solid", maxjobs_map="dashed"))+
+                                      chunksize="dashed",
+                          Pool.map="solid", maxjobs="dashed"))+
   theme(panel.margin=grid::unit(0, "cm"))+
   facet_grid(pfun.fac ~ ., scales="free")
 

@@ -15,11 +15,12 @@ if __name__ == '__main__':
     width = int(sys.argv[1])
     height = int(sys.argv[2])
     cores_str = sys.argv[3]
-    no_maxjobs = cores_str.replace("maxjobs", "")
-    cores = int(no_maxjobs)
-    print(width, height, cores)
+    no_text = cores_str[:1]
+    only_text = cores_str[1:]
+    cores = int(no_text)
     p = Pool(cores)
     MAXJOBS=100
+    
     def maxjobs_map(f, items):
         first_i = 0
         result = []
@@ -29,13 +30,20 @@ if __name__ == '__main__':
             result += p.map(f, some_items)
             first_i += MAXJOBS
         return result
+    
+    def chunksize_map(f, items):
+        return p.map(f, items, MAXJOBS)
+    
     if cores == 1:
         MAP = map
     else:
         if "maxjobs" in cores_str:
             MAP = maxjobs_map
+        elif "chunksize" in cores_str:
+            MAP = chunksize_map
         else:
             MAP = p.map
+    print(width, height, cores, MAP)
     if height == 1:
         base_list = list(range(width))
         MAP(returnNone, base_list)
