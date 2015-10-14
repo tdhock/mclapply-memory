@@ -36,6 +36,22 @@ results in a significant decrease in memory consumption! So in
 practice I use this in [[https://github.com/tdhock/PeakSegJoint/blob/master/R/mclapply.R][PeakSegJoint]] to avoid having my jobs killed on
 [[http://www.hpc.mcgill.ca/index.php/starthere/81-doc-pages/91-guillimin-job-submit][the guillimin supercomputer]].
 
+References: =help(mclapply)=
+
+#+BEGIN_SRC text
+mc.preschedule: if set to ‘TRUE’ then the computation is first divided
+          to (at most) as many jobs are there are cores and then the
+          jobs are started, each job possibly covering more than one
+          value.  If set to ‘FALSE’ then one job is forked for each
+          value of ‘X’.  The former is better for short computations or
+          large number of values in ‘X’, the latter is better for jobs
+          that have high variance of completion time and not too many
+          values of ‘X’ compared to ‘mc.cores’.
+#+END_SRC
+
+This benchmark is in the situation with few cores and large number of
+values in X, so I kept mc.preschedule=TRUE.
+
 *** Comparison with multiprocessing in Python
 
 I adapted David Taylor's [[file:multiprocess.py]] code and ran it with
@@ -51,6 +67,95 @@ hack (dashed lines). The regular map function has the least memory
 usage (dotted lines). The memory overhead increases with the number of
 cores (top panel, returnNone), but it is not significant for
 non-trivial data (bottom panel).
+
+*** R/Python conversion table
+
+| R function         | Python function          |
+|--------------------+--------------------------|
+| lapply             | map                      |
+| parallel::mclapply | multiprocessing.Pool.map |
+| do.call            | apply                    |
+
+Note: In R we have several functions which do basically the same thing
+as Python's =map= but with slightly different inputs/outputs:
+
+| R serial | R parallel | vector args | scalar args |
+|----------+------------+-------------+-------------|
+| lapply   | mclapply   |           1 |          0+ |
+| sapply   | NA         |           1 |          0+ |
+| mapply   | mcmapply   |          1+ |          0+ |
+| Map      | mcMap      |          1+ |          0+ |
+
+From =help(Map)= in R:
+
+#+BEGIN_SRC text
+‘Map’ is a simple wrapper to ‘mapply’ which does not attempt to
+simplify the result, similar to Common Lisp's ‘mapcar’ (with
+arguments being recycled, however).  Future versions may allow
+some control of the result type.
+#+END_SRC
+
+=sapply= and =lapply= take the same outputs but =sapply= defaults to
+simplify=TRUE:
+
+#+BEGIN_SRC text
+> Map(rep, 1:4, 4:1)
+[[1]]
+[1] 1 1 1 1
+
+[[2]]
+[1] 2 2 2
+
+[[3]]
+[1] 3 3
+
+[[4]]
+[1] 4
+
+> mapply(rep, 1:4, 4:1)
+[[1]]
+[1] 1 1 1 1
+
+[[2]]
+[1] 2 2 2
+
+[[3]]
+[1] 3 3
+
+[[4]]
+[1] 4
+
+> lapply(1:4, rep, 4:1)
+Error in FUN(X[[i]], ...) : invalid 'times' argument
+> lapply(1:4, rep, 5)
+[[1]]
+[1] 1 1 1 1 1
+
+[[2]]
+[1] 2 2 2 2 2
+
+[[3]]
+[1] 3 3 3 3 3
+
+[[4]]
+[1] 4 4 4 4 4
+
+> sapply(1:4, rep, 5)
+     [,1] [,2] [,3] [,4]
+[1,]    1    2    3    4
+[2,]    1    2    3    4
+[3,]    1    2    3    4
+[4,]    1    2    3    4
+[5,]    1    2    3    4
+> mapply(rep, 1:4, 5)
+     [,1] [,2] [,3] [,4]
+[1,]    1    2    3    4
+[2,]    1    2    3    4
+[3,]    1    2    3    4
+[4,]    1    2    3    4
+[5,]    1    2    3    4
+> 
+#+END_SRC
 
 *** Reproducing these results
 
